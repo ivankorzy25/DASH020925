@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard KOR - Gestión de HTMLs</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f5f5;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            color: #718096;
+            margin-top: 0.5rem;
+        }
+        
+        /* Panel de asociación */
+        .asociacion-panel {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            display: none;
+        }
+        
+        .carpeta-selector {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        
+        .asociacion-item {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .sugerencia-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem;
+            background: #f8f9fa;
+            border-radius: 6px;
+            margin: 0.5rem 0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .sugerencia-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+        
+        .sugerencia-item.selected {
+            background: #d1ecf1;
+            border: 2px solid #0c5460;
+        }
+        
+        .confianza-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        .confianza-alta { background: #d4edda; color: #155724; }
+        .confianza-media { background: #fff3cd; color: #856404; }
+        .confianza-baja { background: #f8d7da; color: #721c24; }
+        
+        .search-box {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .productos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            padding: 1rem 0;
+        }
+        
+        .producto-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            position: relative;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .producto-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .producto-imagen-container {
+            width: 100%;
+            height: 200px;
+            background: #f8f9fa;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .producto-imagen {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 10px;
+        }
+        
+        .producto-sin-imagen {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #cbd5e0;
+            font-size: 3rem;
+        }
+        
+        .producto-info {
+            padding: 1rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .producto-modelo {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 0.5rem;
+            min-height: 2.4rem;
+            line-height: 1.2;
+        }
+        
+        .producto-marca-sku {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: #718096;
+            margin-bottom: 0.5rem;
+        }
+        
+        .producto-precio {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #667eea;
+            margin: 0.5rem 0;
+        }
+        
+        .producto-stock {
+            font-size: 0.85rem;
+            color: #4a5568;
+            margin-bottom: 1rem;
+        }
+        
+        .producto-acciones {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: auto;
+        }
+        
+        .producto-acciones .btn {
+            flex: 1;
+            text-align: center;
+            padding: 0.5rem;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-primary { background: #667eea; color: white; }
+        .btn-primary:hover { background: #5a67d8; }
+        .btn-success { background: #48bb78; color: white; }
+        .btn-warning { background: #ed8936; color: white; }
+        .btn-info { background: #4299e1; color: white; }
+        .btn-danger { background: #f56565; color: white; }
+        
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .status.con-html { background: #c6f6d5; color: #22543d; }
+        .status.sin-html { background: #fed7d7; color: #742a2a; }
+        
+        .me-1 { margin-right: 0.25rem; }
+        .me-2 { margin-right: 0.5rem; }
+        
+        /* Notificaciones */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+            max-width: 300px;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(400px); opacity: 0; }
+        }
+        
+        .notification.success { background: #48bb78; color: white; }
+        .notification.error { background: #f56565; color: white; }
+        .notification.info { background: #4299e1; color: white; }
+        .notification.hide { animation: slideOut 0.3s ease forwards; }
+        
+        .loading-indicator {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 8px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .producto-card.uploading {
+            opacity: 0.7;
+        }
+        
+        .producto-card.uploading::after {
+            content: "Subiendo...";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(102, 126, 234, 0.9);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+        
+        /* Modal de preview */
+        .preview-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+        }
+        
+        .preview-content {
+            position: relative;
+            width: 90%;
+            height: 90%;
+            max-width: 1200px;
+            margin: 2% auto;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .preview-header {
+            background: #2d3748;
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .preview-body {
+            height: calc(100% - 60px);
+            overflow: auto;
+        }
+        
+        .preview-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        /* Modal de imágenes */
+        .imagenes-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+        }
+        
+        .imagenes-content {
+            position: relative;
+            width: 90%;
+            max-width: 1200px;
+            max-height: 90vh;
+            margin: 2% auto;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .imagenes-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .imagenes-body {
+            padding: 1.5rem;
+            overflow-y: auto;
+            flex: 1;
+        }
+        
+        .imagenes-upload-zone {
+            border: 2px dashed #cbd5e0;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            background: #f7fafc;
+            margin-bottom: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .imagenes-upload-zone:hover {
+            border-color: #667eea;
+            background: #edf2f7;
+        }
+        
+        .imagenes-upload-zone.dragover {
+            border-color: #48bb78;
+            background: #f0fff4;
+        }
+        
+        .imagenes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .imagen-item {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+        
+        .imagen-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .imagen-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        
+        .imagen-info {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            color: white;
+            padding: 0.75rem;
+            font-size: 0.85rem;
+        }
+        
+        .imagen-orden {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            background: #667eea;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+        
+        .imagen-eliminar {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #f56565;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 0.25rem 0.5rem;
+            cursor: pointer;
+            font-size: 0.85rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .imagen-item:hover .imagen-eliminar {
+            opacity: 1;
+        }
+        
+        .upload-options {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            justify-content: center;
+        }
+        
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .radio-option:hover {
+            border-color: #667eea;
+            background: #f7fafc;
+        }
+        
+        .radio-option input[type="radio"]:checked + label {
+            color: #667eea;
+            font-weight: 600;
+        }
+        
+        .radio-option.selected {
+            border-color: #667eea;
+            background: #edf2f7;
+        }
+        
+        .btn-imagenes {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-imagenes:hover {
+            background: linear-gradient(135deg, #5a67d8 0%, #6b4299 100%);
+        }
+        
+        .imagen-principal-badge {
+            background: #48bb78;
+            color: white;
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            margin-left: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>Dashboard KOR - Gestión de HTMLs</h1>
+            <p>Sistema de carga y visualización de fichas HTML de productos</p>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-value" id="total-productos">0</div>
+                <div class="stat-label">Total Productos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="con-html">0</div>
+                <div class="stat-label">Con HTML</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="sin-html">0</div>
+                <div class="stat-label">Sin HTML</div>
+            </div>
+        </div>
+        
+        <!-- Panel de asociación inteligente -->
+        <div class="asociacion-panel" id="asociacionPanel">
+            <h2>🤖 Asociación Inteligente de HTMLs</h2>
+            
+            <div class="carpeta-selector">
+                <label>Selecciona la carpeta con tus HTMLs:</label>
+                <input type="file" id="folderInput" webkitdirectory directory multiple style="display: none;">
+                <button class="btn btn-primary" onclick="escanearCarpeta()">
+                    📁 Seleccionar Carpeta
+                </button>
+                <span id="scanStatus"></span>
+            </div>
+            
+            <div id="asociacionesContainer"></div>
+        </div>
+        
+        <button class="btn btn-info" onclick="toggleAsociacionPanel()">
+            🔍 Asociación Inteligente de HTMLs
+        </button>
+        
+        <div style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-top: 1rem;">
+            <h2 style="margin-bottom: 1rem;">Productos</h2>
+            <input type="text" class="search-box" id="search" placeholder="Buscar por modelo, marca o SKU...">
+            <div class="productos-grid" id="productos-list"></div>
+        </div>
+    </div>
+    
+    <!-- Modal de preview -->
+    <div class="preview-modal" id="previewModal">
+        <div class="preview-content">
+            <div class="preview-header">
+                <h3 id="previewTitle">Vista previa</h3>
+                <button class="btn btn-danger btn-sm" onclick="closePreview()">Cerrar</button>
+            </div>
+            <div class="preview-body">
+                <iframe class="preview-iframe" id="previewFrame"></iframe>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal de gestión de imágenes -->
+    <div class="imagenes-modal" id="imagenesModal">
+        <div class="imagenes-content">
+            <div class="imagenes-header">
+                <h3 id="imagenesTitle">Gestión de Imágenes</h3>
+                <button class="btn btn-danger btn-sm" onclick="closeImagenesModal()">✕ Cerrar</button>
+            </div>
+            <div class="imagenes-body">
+                <!-- Zona de carga de imágenes -->
+                <div class="imagenes-upload-zone" id="uploadZone" onclick="seleccionarImagenes()">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">📸</div>
+                    <h4>Arrastra imágenes aquí o haz clic para seleccionar</h4>
+                    <p style="color: #718096; margin-top: 0.5rem;">Puedes subir múltiples imágenes (JPG, PNG, GIF, WebP)</p>
+                    <p style="color: #718096; font-size: 0.85rem;">Se ordenarán automáticamente de mayor a menor tamaño</p>
+                </div>
+                
+                <!-- Opciones de carga -->
+                <div class="upload-options">
+                    <div class="radio-option" onclick="setUploadMode('agregar', this)">
+                        <input type="radio" name="uploadMode" value="agregar" id="modoAgregar" checked>
+                        <label for="modoAgregar">➕ Agregar a las existentes</label>
+                    </div>
+                    <div class="radio-option" onclick="setUploadMode('reemplazar', this)">
+                        <input type="radio" name="uploadMode" value="reemplazar" id="modoReemplazar">
+                        <label for="modoReemplazar">🔄 Reemplazar todas</label>
+                    </div>
+                </div>
+                
+                <!-- Input oculto para selección de archivos -->
+                <input type="file" id="imagenesInput" multiple accept="image/*" style="display: none;" onchange="procesarImagenes(this.files)">
+                
+                <!-- Grid de imágenes existentes -->
+                <div id="imagenesExistentes">
+                    <h4 style="margin-top: 2rem; margin-bottom: 1rem;">Imágenes Actuales</h4>
+                    <div class="imagenes-grid" id="imagenesGrid">
+                        <!-- Se llenará dinámicamente -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let productos = [];
+        let asociacionesActuales = [];
+        let productoActualSKU = null;
+        let productoActualModelo = null;
+        let modoUpload = 'agregar';
+        
+        window.onload = function() {
+            loadProductos();
+        };
+        
+        function loadProductos() {
+            fetch('/api/productos')
+                .then(response => response.json())
+                .then(data => {
+                    productos = data;
+                    renderProductos(productos);
+                    updateStats();
+                });
+        }
+        
+        function updateStats() {
+            const total = productos.length;
+            const conHtml = productos.filter(p => p.url_ficha_html).length;
+            const sinHtml = total - conHtml;
+            
+            document.getElementById('total-productos').textContent = total;
+            document.getElementById('con-html').textContent = conHtml;
+            document.getElementById('sin-html').textContent = sinHtml;
+        }
+        
+        function toggleAsociacionPanel() {
+            const panel = document.getElementById('asociacionPanel');
+            panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+        }
+        
+        document.getElementById('folderInput').addEventListener('change', function(e) {
+            const files = e.target.files;
+            if (!files.length) return;
+            
+            // Escanear la carpeta
+            escanearCarpeta();
+        });
+
+        // Mejorar la función de escaneo
+        // Función mejorada para manejar la selección de carpetas
+        function seleccionarCarpeta() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.webkitdirectory = true;
+            input.multiple = true;
+            
+            input.onchange = function(e) {
+                const files = e.target.files;
+                if (!files.length) return;
+                
+                // Filtrar solo archivos HTML
+                const htmlFiles = Array.from(files).filter(file => 
+                    file.name.toLowerCase().endsWith('.html') || 
+                    file.name.toLowerCase().endsWith('.htm') ||
+                    file.type === 'text/html'
+                );
+                
+                if (htmlFiles.length === 0) {
+                    showNotification('No se encontraron archivos HTML en la carpeta', 'error');
+                    return;
+                }
+                
+                // Almacenar los archivos en el input original para referencia
+                const dataTransfer = new DataTransfer();
+                htmlFiles.forEach(file => dataTransfer.items.add(file));
+                document.getElementById('folderInput').files = dataTransfer.files;
+
+                // Procesar archivos para escaneo
+                procesarArchivosParaEscaneo(htmlFiles);
+            };
+            
+            input.click();
+        }
+
+        function procesarArchivosParaEscaneo(htmlFiles) {
+            document.getElementById('scanStatus').innerHTML = '<span class="loading-indicator"></span> Procesando archivos...';
+            
+            const fileData = Array.from(htmlFiles).map(file => ({
+                name: file.name,
+                path: file.webkitRelativePath,
+                size: file.size,
+                type: file.type
+            }));
+            
+            fetch('/api/escanear-carpeta', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({files: fileData})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.error){
+                    showNotification('Error: ' + data.error, 'error');
+                    document.getElementById('scanStatus').innerHTML = '✗ Error';
+                    return;
+                }
+                document.getElementById('scanStatus').innerHTML = `✓ ${data.htmls_encontrados} HTMLs encontrados`;
+                asociacionesActuales = data.asociaciones;
+                renderAsociaciones(data.asociaciones);
+            })
+            .catch(error => {
+                document.getElementById('scanStatus').innerHTML = '✗ Error al escanear';
+                showNotification('Error al procesar archivos: ' + error.message, 'error');
+            });
+        }
+
+        // Actualizar la función de escaneo para que llame al selector de carpetas
+        function escanearCarpeta() {
+            seleccionarCarpeta();
+        }
+        
+        function renderAsociaciones(asociaciones) {
+            const container = document.getElementById('asociacionesContainer');
+            
+            if (asociaciones.length === 0) {
+                container.innerHTML = '<p>No se encontraron asociaciones posibles</p>';
+                return;
+            }
+            
+            container.innerHTML = '<h3>Revisa y confirma las asociaciones sugeridas:</h3>' +
+                asociaciones.map((asoc, idx) => {
+                    const mejorSugerencia = asoc.sugerencias[0];
+                    const confianza = mejorSugerencia.similitud.puntaje;
+                    const confianzaClass = confianza > 70 ? 'confianza-alta' : 
+                                          confianza > 50 ? 'confianza-media' : 'confianza-baja';
+                    
+                    return `
+                        <div class="asociacion-item">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                <div>
+                                    <h4>${asoc.producto.Modelo}</h4>
+                                    <small>Marca: ${asoc.producto.Marca || '-'} | SKU: ${asoc.producto.SKU || '-'}</small>
+                                </div>
+                                ${asoc.producto.URL_PDF ? `
+                                    <div style="display: flex; gap: 0.5rem;">
+                                        <button class="btn btn-primary btn-sm" onclick="verPDF('${asoc.producto.URL_PDF}', '${asoc.producto.Modelo}')">
+                                            📄 Ver Ficha PDF
+                                        </button>
+                                        <button class="btn btn-info btn-sm" onclick="previewPDF('${asoc.producto.URL_PDF}', '${asoc.producto.Modelo}')">
+                                            🖼️ Preview PDF
+                                        </button>
+                                    </div>
+                                ` : ''}
+                            </div>
+                            
+                            <div style="margin-top: 1rem;">
+                                ${asoc.sugerencias.map((sug, sidx) => `
+                                    <div class="sugerencia-item" onclick="seleccionarSugerencia(${idx}, ${sidx}, this)">
+                                        <input type="radio" name="asoc_${idx}" value="${sidx}" id="sug_${idx}_${sidx}">
+                                        <label for="sug_${idx}_${sidx}" style="flex: 1; cursor: pointer;">
+                                            <strong>${sug.html.archivo}</strong>
+                                            <br><small>📁 ${sug.html.carpeta} | 📊 ${(sug.html.size/1024).toFixed(1)}KB</small>
+                                        </label>
+                                        <span class="confianza-badge ${sug.similitud.puntaje > 70 ? 'confianza-alta' : 
+                                                                       sug.similitud.puntaje > 50 ? 'confianza-media' : 'confianza-baja'}">
+                                            ${sug.similitud.puntaje.toFixed(0)}%
+                                        </span>
+                                        <button class="btn btn-info btn-sm" onclick="previewLocal('${sug.html.path}', event)">
+                                            👁️ Ver HTML
+                                        </button>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            
+                            <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+                                <button class="btn btn-success" onclick="confirmarAsociacion(${idx})">
+                                    ✓ Confirmar y Subir
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="rechazarAsociacion(${idx})">
+                                    ✗ Omitir
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+        }
+        
+        function seleccionarSugerencia(asocIdx, sugIdx, element) {
+            // Limpiar selecciones previas
+            document.querySelectorAll(`.asociacion-item:nth-child(${asocIdx + 2}) .sugerencia-item`).forEach(item => {
+                item.classList.remove('selected');
+            });
+            element.classList.add('selected');
+            document.getElementById(`sug_${asocIdx}_${sugIdx}`).checked = true;
+        }
+        
+        function previewLocal(path, event) {
+            event.stopPropagation();
+            const fileInput = document.getElementById('folderInput');
+            const file = Array.from(fileInput.files).find(f => f.webkitRelativePath === path);
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const frame = document.getElementById('previewFrame');
+                    frame.srcdoc = e.target.result;
+                    document.getElementById('previewTitle').textContent = 'Vista previa: ' + file.name;
+                    document.getElementById('previewModal').style.display = 'block';
+                };
+                reader.readAsText(file);
+            } else {
+                showNotification('No se pudo encontrar el archivo para la vista previa.', 'error');
+            }
+        }
+        
+        function closePreview() {
+            document.getElementById('previewModal').style.display = 'none';
+            const frame = document.getElementById('previewFrame');
+            frame.src = '';
+            frame.srcdoc = '';  // Limpiar también el contenido HTML
+        }
+        
+        function confirmarAsociacion(idx) {
+            const selectedRadio = document.querySelector(`input[name="asoc_${idx}"]:checked`);
+            if (!selectedRadio) {
+                showNotification('Selecciona un HTML primero', 'error');
+                return;
+            }
+            
+            const asoc = asociacionesActuales[idx];
+            const sug = asoc.sugerencias[selectedRadio.value];
+            
+            const fileInput = document.getElementById('folderInput');
+            const fileToUpload = Array.from(fileInput.files).find(f => f.webkitRelativePath === sug.html.path);
+
+            if (!fileToUpload) {
+                showNotification('Error: No se pudo encontrar el archivo local para subir.', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileToUpload);
+            formData.append('modelo', asoc.producto.Modelo);
+
+            fetch('/api/upload', { // Usamos el endpoint de upload original
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification(`HTML subido para ${asoc.producto.Modelo}`, 'success');
+                    const itemToRemove = selectedRadio.closest('.asociacion-item');
+                    if(itemToRemove) itemToRemove.remove();
+                    loadProductos();
+                } else {
+                    showNotification('Error al subir: ' + data.error, 'error');
+                }
+            }).catch(err => {
+                showNotification('Error de red al subir el archivo.', 'error');
+            });
+        }
+        
+        function rechazarAsociacion(idx) {
+            document.querySelector(`.asociacion-item:nth-child(${idx + 2})`).remove();
+        }
+        
+        function renderProductos(productosToRender) {
+            const container = document.getElementById('productos-list');
+            container.innerHTML = '';
+            
+            productosToRender.forEach(producto => {
+                const card = document.createElement('div');
+                card.className = 'producto-card';
+                card.id = `card-${producto.SKU || producto.Modelo}`;
+                
+                const hasHtml = producto.url_ficha_html ? true : false;
+                
+                // Determinar qué imagen usar (prioridad: Web_Generica > MercadoLibre > Instagram)
+                const imagenUrl = producto.Web_Generica_URL_1 || 
+                                 producto.MercadoLibre_URL_1 || 
+                                 producto.Instagram_Feed_URL_1;
+                
+                // Formatear el precio
+                const precio = producto.Precio_USD_con_IVA ? 
+                    parseFloat(producto.Precio_USD_con_IVA).toFixed(2) : '0.00';
+                
+                card.innerHTML = `
+                    <div class="producto-imagen-container">
+                        ${imagenUrl ? 
+                            `<img class="producto-imagen" src="${imagenUrl}" alt="${producto.Modelo}" 
+                                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">`
+                            : ''
+                        }
+                        <div class="producto-sin-imagen" ${imagenUrl ? 'style="display:none;"' : ''}>
+                            📦
+                        </div>
+                    </div>
+                    
+                    <div class="producto-info">
+                        <div class="producto-modelo">${producto.Modelo || 'Sin modelo'}</div>
+                        
+                        <div class="producto-marca-sku">
+                            <span>${producto.Marca || '-'}</span>
+                            <span style="text-align: right;">${producto.SKU || '-'}</span>
+                        </div>
+                        
+                        <div class="producto-precio">$${precio}</div>
+                        
+                        <div class="producto-stock">
+                            Stock: ${producto.Stock || 'No disponible'}
+                        </div>
+                        
+                        <div style="margin-bottom: 0.5rem;">
+                            <span class="status ${hasHtml ? 'con-html' : 'sin-html'}">
+                                ${hasHtml ? '✓ Con HTML' : '✗ Sin HTML'}
+                            </span>
+                        </div>
+                        
+                        <div class="producto-acciones">
+                            ${producto.URL_PDF ? `
+                                <button class="btn btn-info btn-sm" onclick="verPDF('${producto.URL_PDF}', '${producto.Modelo}')">
+                                    📄 Ver PDF
+                                </button>
+                            ` : ''}
+                            <button class="btn btn-imagenes btn-sm" onclick="abrirModalImagenes('${producto.SKU}', '${producto.Modelo}')">
+                                🖼️ Imágenes
+                            </button>
+                            ${hasHtml 
+                                ? `
+                                    <button class="btn btn-success btn-sm" onclick="verHTML('${producto.url_ficha_html}', '${producto.Modelo}')">
+                                        👁️ Ver HTML
+                                    </button>
+                                    <button class="btn btn-warning btn-sm" onclick="reemplazarHTML('${producto.Modelo}')">
+                                        🔄 Reemplazar
+                                    </button>
+                                  `
+                                : `
+                                    <button class="btn btn-primary ${producto.URL_PDF ? 'btn-sm' : ''}" onclick="subirHTML('${producto.Modelo}')">
+                                        📤 Subir HTML
+                                    </button>
+                                  `
+                            }
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+        
+        document.getElementById('search').addEventListener('keyup', function(e) {
+            const search = e.target.value.toLowerCase();
+            const filtered = productos.filter(p => 
+                (p.Modelo && p.Modelo.toLowerCase().includes(search)) ||
+                (p.Marca && p.Marca.toLowerCase().includes(search)) ||
+                (p.SKU && p.SKU.toLowerCase().includes(search))
+            );
+            renderProductos(filtered);
+        });
+        
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.add('hide');
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+        
+        function subirHTML(modelo) {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.html';
+            
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    uploadFile(file, modelo, false);
+                }
+            };
+            
+            input.click();
+        }
+        
+        function reemplazarHTML(modelo) {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.html';
+            
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    uploadFile(file, modelo, true);
+                }
+            };
+            
+            input.click();
+        }
+        
+        function verHTML(url, modelo) {
+            window.open(url, '_blank');
+        }
+        
+        function verPDF(url, modelo) {
+            window.open(url, '_blank');
+        }
+        
+        function previewPDF(url, modelo) {
+            // Mostrar el PDF en el modal con un iframe
+            const frame = document.getElementById('previewFrame');
+            // Google Chrome puede mostrar PDFs directamente en un iframe
+            frame.src = url + '#toolbar=0&navpanes=0&scrollbar=0&page=1&view=FitH';
+            document.getElementById('previewTitle').textContent = 'Vista previa PDF: ' + modelo;
+            document.getElementById('previewModal').style.display = 'block';
+        }
+        
+        function uploadFile(file, modelo, esReemplazo) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('modelo', modelo);
+            
+            const card = document.getElementById(`card-${productos.find(p => p.Modelo === modelo)?.SKU || modelo}`);
+            if (card) {
+                card.classList.add('uploading');
+            }
+            
+            fetch('/api/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification(`HTML ${esReemplazo ? 'reemplazado' : 'subido'} exitosamente`, 'success');
+                    setTimeout(() => loadProductos(), 500);
+                } else {
+                    showNotification(`Error: ${data.error}`, 'error');
+                    if (card) {
+                        card.classList.remove('uploading');
+                    }
+                }
+            })
+            .catch(error => {
+                showNotification('Error al subir archivo', 'error');
+                if (card) {
+                    card.classList.remove('uploading');
+                }
+            });
+        }
+        
+        // Funciones para el modal de imágenes
+        function abrirModalImagenes(sku, modelo) {
+            productoActualSKU = sku;
+            productoActualModelo = modelo;
+            
+            document.getElementById('imagenesTitle').textContent = `Gestión de Imágenes - ${modelo}`;
+            document.getElementById('imagenesModal').style.display = 'block';
+            
+            // Cargar imágenes existentes
+            cargarImagenesExistentes();
+        }
+        
+        function closeImagenesModal() {
+            document.getElementById('imagenesModal').style.display = 'none';
+            productoActualSKU = null;
+            productoActualModelo = null;
+            modoUpload = 'agregar';
+            document.getElementById('modoAgregar').checked = true;
+            document.querySelectorAll('.radio-option').forEach(opt => opt.classList.remove('selected'));
+        }
+        
+        function seleccionarImagenes() {
+            document.getElementById('imagenesInput').click();
+        }
+        
+        function setUploadMode(modo, element) {
+            modoUpload = modo;
+            document.querySelectorAll('.radio-option').forEach(opt => opt.classList.remove('selected'));
+            element.classList.add('selected');
+            document.getElementById(modo === 'agregar' ? 'modoAgregar' : 'modoReemplazar').checked = true;
+        }
+        
+        function procesarImagenes(files) {
+            if (!files || files.length === 0) {
+                showNotification('No se seleccionaron archivos', 'error');
+                return;
+            }
+            
+            const formData = new FormData();
+            
+            // Agregar cada imagen al FormData
+            for (let i = 0; i < files.length; i++) {
+                formData.append('images', files[i]);
+            }
+            
+            formData.append('modelo', productoActualModelo);
+            formData.append('sku', productoActualSKU);
+            formData.append('modo', modoUpload);
+            
+            // Mostrar indicador de carga
+            const uploadZone = document.getElementById('uploadZone');
+            const originalContent = uploadZone.innerHTML;
+            uploadZone.innerHTML = '<div class="loading-indicator" style="font-size: 3rem;"></div><p>Subiendo imágenes...</p>';
+            
+            fetch('/api/upload-images', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification(`${data.imagenes_subidas} imágenes subidas exitosamente`, 'success');
+                    // Primero actualizar la lista de productos, luego cargar las imágenes
+                    loadProductos();
+                    setTimeout(() => {
+                        cargarImagenesExistentes();
+                    }, 500);
+                    // Restaurar la zona de carga
+                    uploadZone.innerHTML = originalContent;
+                } else {
+                    showNotification(`Error: ${data.error}`, 'error');
+                    uploadZone.innerHTML = originalContent;
+                }
+            })
+            .catch(error => {
+                showNotification('Error al subir imágenes: ' + error.message, 'error');
+                uploadZone.innerHTML = originalContent;
+            });
+        }
+        
+        function cargarImagenesExistentes() {
+            // Hacer una petición al servidor para obtener las imágenes actualizadas
+            fetch(`/api/imagenes/${productoActualSKU}`)
+                .then(response => response.json())
+                .then(imagenes => {
+                    const imagenesGrid = document.getElementById('imagenesGrid');
+                    
+                    if (!imagenes || imagenes.length === 0) {
+                        imagenesGrid.innerHTML = '<p style="text-align: center; color: #718096;">No hay imágenes cargadas para este producto</p>';
+                        return;
+                    }
+                    
+                    imagenesGrid.innerHTML = imagenes.map((imagen, idx) => `
+                        <div class="imagen-item">
+                            <span class="imagen-orden">#${imagen.orden_posicion}</span>
+                            <button class="imagen-eliminar" onclick="eliminarImagen('${imagen.url_imagen}')">✕</button>
+                            <img src="${imagen.url_imagen}" alt="Imagen ${idx + 1}" 
+                                 onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 200%22%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%23999%22 font-size=%2248%22%3E❌%3C/text%3E%3C/svg%3E';">
+                            <div class="imagen-info">
+                                ${(imagen.tamano_bytes / 1024).toFixed(1)} KB
+                                ${idx === 0 ? '<span class="imagen-principal-badge">Principal</span>' : ''}
+                            </div>
+                        </div>
+                    `).join('');
+                    
+                    // También actualizar el array local de productos
+                    const productoIndex = productos.findIndex(p => p.SKU === productoActualSKU);
+                    if (productoIndex !== -1) {
+                        productos[productoIndex].imagenes_adicionales = imagenes;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error cargando imágenes:', error);
+                    document.getElementById('imagenesGrid').innerHTML = '<p style="text-align: center; color: #e53e3e;">Error al cargar las imágenes</p>';
+                });
+        }
+        
+        function eliminarImagen(url) {
+            if (!confirm('¿Estás seguro de eliminar esta imagen?')) {
+                return;
+            }
+            
+            fetch('/api/eliminar-imagen', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({url: url})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification('Imagen eliminada exitosamente', 'success');
+                    // Actualizar tanto productos como las imágenes del modal
+                    loadProductos();
+                    setTimeout(() => {
+                        cargarImagenesExistentes();
+                    }, 500);
+                } else {
+                    showNotification('Error al eliminar imagen: ' + data.error, 'error');
+                }
+            })
+            .catch(error => {
+                showNotification('Error al eliminar imagen', 'error');
+            });
+        }
+        
+        // Configurar drag and drop
+        const uploadZone = document.getElementById('uploadZone');
+        
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.classList.add('dragover');
+        });
+        
+        uploadZone.addEventListener('dragleave', () => {
+            uploadZone.classList.remove('dragover');
+        });
+        
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+            
+            const files = Array.from(e.dataTransfer.files).filter(file => file.type.startsWith('image/'));
+            if (files.length > 0) {
+                procesarImagenes(files);
+            } else {
+                showNotification('Solo se aceptan archivos de imagen', 'error');
+            }
+        });
+    </script>
+</body>
+</html>

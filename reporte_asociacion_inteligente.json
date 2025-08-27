@@ -1,0 +1,10 @@
+{
+  "total_productos": 183,
+  "con_html": 103,
+  "con_pdf": 105,
+  "candidatos_asociacion": 2,
+  "excluidos_sin_pdf": 78,
+  "porcentaje_candidatos": 1.09,
+  "filtro_correcto": true,
+  "descripcion": "El filtro de asociación inteligente funciona correctamente. Solo incluye productos que tienen PDF pero no tienen HTML, excluyendo productos sin PDF."
+}
