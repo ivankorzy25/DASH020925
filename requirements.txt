@@ -9,3 +9,6 @@ pandas==2.1.4
 openpyxl==3.1.2
 xlrd==2.0.1
 PyJWT==2.8.0
+pydantic-settings
+pytest==7.4.4
+pytest-cov==4.1.0

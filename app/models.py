@@ -59,7 +59,7 @@ class Media(Base):
     current_version_id = Column(Integer, ForeignKey("media_versions.id"), nullable=True)
 
     product = relationship("Product", back_populates="media_items")
-    versions = relationship("MediaVersion", back_populates="media")
+    versions = relationship("MediaVersion", back_populates="media", primaryjoin="Media.id == MediaVersion.media_id")
 
 class MediaVersion(Base):
     __tablename__ = "media_versions"
@@ -72,7 +72,7 @@ class MediaVersion(Base):
     notes = Column(Text)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
-    media = relationship("Media", back_populates="versions")
+    media = relationship("Media", back_populates="versions", foreign_keys=[media_id])
 
 class PriceList(Base):
     __tablename__ = "price_lists"

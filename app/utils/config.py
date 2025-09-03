@@ -7,7 +7,7 @@ load_dotenv()
 
 class Settings(BaseSettings):
     # Configuración de la base de datos
-    DB_URL: str
+    DATABASE_URL: str
 
     # Configuración del almacenamiento (Storage)
     STORAGE_TYPE: str = "local"

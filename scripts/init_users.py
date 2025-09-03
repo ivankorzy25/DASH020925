@@ -3,6 +3,7 @@ import os
 import sys
 from app.database import SessionLocal
 from app.services.auth_service import AuthService
+from app.models import User, UserRole
 
 def init_users():
     """Initialize default users"""
@@ -36,5 +37,4 @@ def init_users():
     print("User initialization completed")
 
 if __name__ == "__main__":
-    from app.models import User, UserRole
     init_users()
