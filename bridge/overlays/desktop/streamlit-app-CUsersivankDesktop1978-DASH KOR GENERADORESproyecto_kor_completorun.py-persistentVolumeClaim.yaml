@@ -1,0 +1,9 @@
+#! streamlit-app-C:\Users\ivank\Desktop\1978-DASH KOR GENERADORES\proyecto_kor_completo\run.py-persistentVolumeClaim.yaml
+# Generated code, do not edit
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+    name: streamlit-app-c--users-ivank-desktop-1978-dash-kor-generadores-proyecto-kor-completo-run-py
+    namespace: proyecto-kor-completo
+spec:
+    storageClassName: "hostpath" # see docker/desktop-storage-provisioner

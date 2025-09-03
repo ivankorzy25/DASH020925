@@ -1,0 +1,8 @@
+#! 0-proyecto-kor-completo-namespace.yaml
+# Generated code, do not edit
+apiVersion: v1
+kind: Namespace
+metadata:
+    name: proyecto-kor-completo
+    labels:
+        com.docker.compose.project: proyecto_kor_completo

@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Multimedia</title>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3a0ca3;
+            --success: #4cc9f0;
+            --danger: #f72585;
+            --warning: #fca311;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --light-gray: #e9ecef;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7f9;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 24px;
+        }
+        
+        h1 {
+            color: var(--dark);
+            margin-bottom: 16px;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        
+        .form-group {
+            flex: 1;
+            min-width: 250px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark);
+        }
+        
+        select, input, button {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+        
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+        }
+        
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-weight: 500;
+        }
+        
+        button:hover {
+            background-color: var(--secondary);
+        }
+        
+        .upload-area {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 24px;
+            text-align: center;
+            border: 2px dashed var(--light-gray);
+            transition: border-color 0.2s;
+        }
+        
+        .upload-area:hover {
+            border-color: var(--primary);
+        }
+        
+        .upload-area h3 {
+            margin-bottom: 16px;
+            color: var(--dark);
+        }
+        
+        .upload-area p {
+            color: var(--gray);
+            margin-bottom: 16px;
+        }
+        
+        .media-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .media-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .media-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .media-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        
+        .media-info {
+            padding: 16px;
+        }
+        
+        .media-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--dark);
+        }
+        
+        .media-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 16px;
+        }
+        
+        .btn {
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+        }
+        
+        .btn-edit {
+            background-color: var(--warning);
+            color: white;
+        }
+        
+        .btn-delete {
+            background-color: var(--danger);
+            color: white;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 24px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+        }
+        
+        .modal h3 {
+            margin-bottom: 16px;
+            color: var(--dark);
+        }
+        
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 24px;
+        }
+        
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--light-gray);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .alert {
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+        }
+        
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+            }
+            
+            .media-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Gestión de Multimedia</h1>
+            <div id="alertArea"></div>
+        </header>
+        
+        <div class="controls">
+            <div class="form-group">
+                <label for="productSelector">Seleccionar Producto</label>
+                <select id="productSelector">
+                    <option value="">Cargando productos...</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="searchInput">Buscar Multimedia</label>
+                <input type="text" id="searchInput" placeholder="Buscar por título...">
+            </div>
+            
+            <div class="form-group">
+                <label>&nbsp;</label>
+                <button id="btnRefresh">Actualizar Lista</button>
+            </div>
+        </div>
+        
+        <div class="upload-area" id="uploadArea">
+            <h3>Subir Nueva Imagen</h3>
+            <p>Arrastra imágenes aquí o haz clic para seleccionar archivos</p>
+            <input type="file" id="fileInput" multiple style="display: none;">
+            <button onclick="document.getElementById('fileInput').click()">Seleccionar Archivos</button>
+        </div>
+        
+        <div id="mediaContainer">
+            <div class="loading">
+                <div class="spinner"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal para editar -->
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <h3>Editar Multimedia</h3>
+            <div class="form-group">
+                <label for="editTitle">Título</label>
+                <input type="text" id="editTitle">
+            </div>
+            <div class="form-group">
+                <label for="editAltText">Texto Alternativo</label>
+                <input type="text" id="editAltText">
+            </div>
+            <div class="modal-actions">
+                <button class="btn" id="btnCancelEdit">Cancelar</button>
+                <button class="btn btn-edit" id="btnSaveEdit">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let currentMediaId = null;
+        let allMedia = [];
+        
+        // Elementos DOM
+        const productSelector = document.getElementById('productSelector');
+        const mediaContainer = document.getElementById('mediaContainer');
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const searchInput = document.getElementById('searchInput');
+        const btnRefresh = document.getElementById('btnRefresh');
+        const editModal = document.getElementById('editModal');
+        const editTitle = document.getElementById('editTitle');
+        const editAltText = document.getElementById('editAltText');
+        const btnCancelEdit = document.getElementById('btnCancelEdit');
+        const btnSaveEdit = document.getElementById('btnSaveEdit');
+        const alertArea = document.getElementById('alertArea');
+        
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', init);
+        productSelector.addEventListener('change', loadMedia);
+        searchInput.addEventListener('input', filterMedia);
+        btnRefresh.addEventListener('click', init);
+        uploadArea.addEventListener('dragover', handleDragOver);
+        uploadArea.addEventListener('drop', handleDrop);
+        fileInput.addEventListener('change', handleFileSelect);
+        btnCancelEdit.addEventListener('click', closeEditModal);
+        btnSaveEdit.addEventListener('click', saveMediaChanges);
+        
+        // Funciones principales
+        function init() {
+            loadProducts();
+            loadMedia();
+        }
+        
+        function loadProducts() {
+            // Limpiar el selector y mostrar estado de carga
+            productSelector.innerHTML = '<option value="">Cargando productos...</option>';
+            
+            fetch('/api/products')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error al cargar productos');
+                    }
+                    return response.json();
+                })
+                .then(products => {
+                    // Limpiar el selector
+                    productSelector.innerHTML = '<option value="">Seleccione un producto</option>';
+                    
+                    // Llenar el selector con los productos
+                    products.forEach(product => {
+                        const option = document.createElement('option');
+                        option.value = product.id;
+                        option.textContent = product.name;
+                        productSelector.appendChild(option);
+                    });
+                    
+                    // Forzar un reflow para asegurar que el navegador renderice los cambios
+                    productSelector.style.display = 'none';
+                    productSelector.offsetHeight; // Trigger reflow
+                    productSelector.style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showAlert('Error al cargar los productos: ' + error.message, 'error');
+                    productSelector.innerHTML = '<option value="">Error al cargar productos</option>';
+                });
+        }
+        
+        function loadMedia() {
+            const productId = productSelector.value;
+            if (!productId) {
+                mediaContainer.innerHTML = '<div class="alert alert-info">Seleccione un producto para ver sus imágenes</div>';
+                return;
+            }
+            
+            mediaContainer.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+            
+            fetch(`/api/media?product_id=${productId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error al cargar multimedia');
+                    }
+                    return response.json();
+                })
+                .then(media => {
+                    allMedia = media;
+                    renderMedia(media);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    mediaContainer.innerHTML = '<div class="alert alert-error">Error al cargar multimedia: ' + error.message + '</div>';
+                });
+        }
+        
+        function renderMedia(media) {
+            if (media.length === 0) {
+                mediaContainer.innerHTML = '<div class="alert alert-info">No hay multimedia para este producto</div>';
+                return;
+            }
+            
+            let html = '<div class="media-grid">';
+            
+            media.forEach(item => {
+                html += `
+                    <div class="media-card" data-id="${item.id}">
+                        <img src="${item.url}" alt="${item.alt_text || 'Imagen'}" class="media-image" loading="lazy">
+                        <div class="media-info">
+                            <div class="media-title">${item.title || 'Sin título'}</div>
+                            <p>${item.alt_text || 'Sin texto alternativo'}</p>
+                            <div class="media-actions">
+                                <button class="btn btn-edit" onclick="openEditModal(${item.id}, '${item.title || ''}', '${item.alt_text || ''}')">Editar</button>
+                                <button class="btn btn-delete" onclick="deleteMedia(${item.id})">Eliminar</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            mediaContainer.innerHTML = html;
+        }
+        
+        function filterMedia() {
+            const searchTerm = searchInput.value.toLowerCase();
+            if (!searchTerm) {
+                renderMedia(allMedia);
+                return;
+            }
+            
+            const filteredMedia = allMedia.filter(item => 
+                (item.title && item.title.toLowerCase().includes(searchTerm)) || 
+                (item.alt_text && item.alt_text.toLowerCase().includes(searchTerm))
+            );
+            
+            renderMedia(filteredMedia);
+        }
+        
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            uploadArea.style.borderColor = 'var(--primary)';
+        }
+        
+        function handleDrop(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            uploadArea.style.borderColor = 'var(--light-gray)';
+            
+            const files = e.dataTransfer.files;
+            handleFiles(files);
+        }
+        
+        function handleFileSelect(e) {
+            const files = e.target.files;
+            handleFiles(files);
+        }
+        
+        function handleFiles(files) {
+            const productId = productSelector.value;
+            if (!productId) {
+                showAlert('Por favor, seleccione un producto primero', 'error');
+                return;
+            }
+            
+            if (files.length === 0) return;
+            
+            const formData = new FormData();
+            for (let i = 0; i < files.length; i++) {
+                formData.append('files', files[i]);
+            }
+            formData.append('product_id', productId);
+            
+            mediaContainer.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+            
+            fetch('/api/media/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => { throw new Error(text) });
+                }
+                return response.json();
+            })
+            .then(data => {
+                showAlert('Archivos subidos correctamente', 'success');
+                fileInput.value = ''; // Limpiar input
+                loadMedia(); // Recargar media
+                loadProducts(); // Recargar productos para actualizar cualquier cambio
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('Error al subir archivos: ' + error.message, 'error');
+                mediaContainer.innerHTML = '';
+                loadMedia();
+            });
+        }
+        
+        function openEditModal(id, title, altText) {
+            currentMediaId = id;
+            editTitle.value = title || '';
+            editAltText.value = altText || '';
+            editModal.style.display = 'flex';
+        }
+        
+        function closeEditModal() {
+            editModal.style.display = 'none';
+            currentMediaId = null;
+        }
+        
+        function saveMediaChanges() {
+            if (!currentMediaId) return;
+            
+            const updates = {
+                title: editTitle.value,
+                alt_text: editAltText.value
+            };
+            
+            fetch(`/api/media/${currentMediaId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(updates)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al actualizar multimedia');
+                }
+                return response.json();
+            })
+            .then(data => {
+                showAlert('Cambios guardados correctamente', 'success');
+                closeEditModal();
+                loadMedia(); // Recargar media para ver los cambios
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('Error al guardar cambios: ' + error.message, 'error');
+            });
+        }
+        
+        function deleteMedia(id) {
+            if (!confirm('¿Está seguro de que desea eliminar este elemento?')) {
+                return;
+            }
+            
+            fetch(`/api/media/${id}`, {
+                method: 'DELETE'
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al eliminar multimedia');
+                }
+                return response.json();
+            })
+            .then(data => {
+                showAlert('Elemento eliminado correctamente', 'success');
+                loadMedia(); // Recargar media
+                loadProducts(); // Recargar productos
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('Error al eliminar: ' + error.message, 'error');
+            });
+        }
+        
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            
+            alertArea.innerHTML = '';
+            alertArea.appendChild(alertDiv);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

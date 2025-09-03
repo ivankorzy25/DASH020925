@@ -1,0 +1,57 @@
+[tool.poetry]
+name = "kor-dashboard-local"
+version = "0.1.0"
+description = "Dashboard local para visualización de productos"
+authors = ["Your Name <you@example.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+fastapi = "^0.103.2"
+uvicorn = {extras = ["standard"], version = "^0.23.2"}
+sqlalchemy = "^2.0.22"
+psycopg2-binary = "^2.9.9"
+python-dotenv = "^1.0.0"
+alembic = "^1.12.0"
+pydantic = {extras = ["email"], version = "^2.4.2"}
+redis = "^5.0.1"
+google-cloud-storage = "^2.13.0"
+boto3 = "^1.28.79"
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.4.3"
+requests = "^2.31.0"
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.black]
+line-length = 88
+target-version = ['py39']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+    | alembic
+    | \.git
+    | \.venv
+    | build
+    | dist
+)/
+'''
+
+[tool.ruff]
+line-length = 88
+select = [
+    "E", "F", "W",  # Basic errors and warnings
+    "I",            # Import order
+    "C",            # Complexity
+    "B",            # Bug risks
+    "UP",           # Pyupgrade
+]
+ignore = ["E501"]   # Allow long lines
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true

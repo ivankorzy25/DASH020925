@@ -1,0 +1,12 @@
+#! kustomization.yaml
+# Generated code, do not edit
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+    - 0-proyecto-kor-completo-namespace.yaml
+    - default-network-policy.yaml
+    - streamlit-app-C:\Users\ivank\Desktop\1978-DASH KOR GENERADORES\proyecto_kor_completo\app-persistentVolumeClaim.yaml
+    - streamlit-app-C:\Users\ivank\Desktop\1978-DASH KOR GENERADORES\proyecto_kor_completo\run.py-persistentVolumeClaim.yaml
+    - streamlit-app-deployment.yaml
+    - streamlit-app-expose.yaml
+    - streamlit-app-service.yaml

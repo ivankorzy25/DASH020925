@@ -1,0 +1,27 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environments
+.env
+.venv
+venv/
+env/
+
+# IDE / Editor specific
+.vscode/
+.idea/
+
+# Node modules
+node_modules/
+
+# History Memo
+.history-memo/
+
+# Cloud SQL Proxy executable
+cloud-sql-proxy.exe
+
+# OS generated files
+.DS_Store

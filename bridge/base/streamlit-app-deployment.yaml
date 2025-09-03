@@ -1,0 +1,50 @@
+#! streamlit-app-deployment.yaml
+# Generated code, do not edit
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: streamlit-app
+    namespace: proyecto-kor-completo
+    labels:
+        com.docker.compose.project: proyecto_kor_completo
+        com.docker.compose.service: streamlit-app
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            com.docker.compose.project: proyecto_kor_completo
+            com.docker.compose.service: streamlit-app
+    strategy:
+        type: Recreate
+    template:
+        metadata:
+            labels:
+                com.docker.compose.project: proyecto_kor_completo
+                com.docker.compose.service: streamlit-app
+                com.docker.compose.network.default: "true"
+        spec:
+            restartPolicy: unless-stopped
+            containers:
+                - name: streamlit-app
+                  image: proyecto_kor_completo-streamlit-app
+                  imagePullPolicy: IfNotPresent
+                  env:
+                    - name: STREAMLIT_SERVER_ADDRESS
+                      value: "0.0.0.0"
+                    - name: STREAMLIT_SERVER_PORT
+                      value: "8501"
+                  ports:
+                    - name: streamlit--8501
+                      containerPort: 8501
+                  volumeMounts:
+                    - name: app-app
+                      mountPath: /app/app
+                    - name: app-run-py
+                      mountPath: /app/run.py
+            volumes:
+                - name: app-app
+                  hostPath:
+                    path: C:\Users\ivank\Desktop\1978-DASH KOR GENERADORES\proyecto_kor_completo\app
+                - name: app-run-py
+                  hostPath:
+                    path: C:\Users\ivank\Desktop\1978-DASH KOR GENERADORES\proyecto_kor_completo\run.py

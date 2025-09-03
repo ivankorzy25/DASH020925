@@ -1,0 +1,18 @@
+#! streamlit-app-C:\Users\ivank\Desktop\1978-DASH KOR GENERADORES\proyecto_kor_completo\run.py-persistentVolumeClaim.yaml
+# Generated code, do not edit
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+    name: streamlit-app-c--users-ivank-desktop-1978-dash-kor-generadores-proyecto-kor-completo-run-py
+    namespace: proyecto-kor-completo
+    labels:
+        com.docker.compose.service: streamlit-app
+        com.docker.compose.volume: C:\Users\ivank\Desktop\1978-DASH KOR GENERADORES\proyecto_kor_completo\run.py
+spec:
+    accessModes:
+        # TODO would need to check which services use this volume
+        - ReadWriteOnce
+    volumeMode: Filesystem
+    resources:
+        requests:
+            storage: 100Mi

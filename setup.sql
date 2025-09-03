@@ -1,0 +1,38 @@
+CREATE DATABASE IF NOT EXISTS mi_bd_local;
+
+USE mi_bd_local;
+
+CREATE TABLE productos (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    sku VARCHAR(100),
+    familia VARCHAR(100),
+    modelo VARCHAR(200),
+    marca VARCHAR(100),
+    descripcion TEXT,
+    caracteristicas TEXT,
+    potencia VARCHAR(100),
+    tension VARCHAR(50),
+    motor VARCHAR(200),
+    arranque VARCHAR(100),
+    combustible VARCHAR(50),
+    cabina VARCHAR(100),
+    tta VARCHAR(10),
+    peso DECIMAL(10,2),
+    dimensiones VARCHAR(100),
+    stock VARCHAR(50),
+    url_pdf VARCHAR(500),
+    precio DECIMAL(12,2),
+    iva DECIMAL(5,2),
+    bonificacion DECIMAL(5,2),
+    descuento_contado DECIMAL(5,2),
+    bonificacion_financiacion DECIMAL(5,2),
+    financiacion TEXT,
+    precio_compra DECIMAL(12,2),
+    imagen1 VARCHAR(500),
+    imagen2 VARCHAR(500),
+    imagen3 VARCHAR(500),
+    imagen4 VARCHAR(500),
+    imagen5 VARCHAR(500),
+    activo TINYINT DEFAULT 1,
+    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);

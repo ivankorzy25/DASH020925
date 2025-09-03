@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8501:8501"
+    environment:
+      - DB_URL=postgresql://postgres:postgres@db:5432/dash020925
+      - STORAGE_TYPE=local
+      - STORAGE_LOCAL_PATH=/app/storage
+      - STORAGE_LOCAL_URL=/storage/
+      - SECRET_KEY=your-secret-key-change-in-production
+      - PASSWORD_SALT=your-password-salt-change-in-production
+    volumes:
+      - ../storage:/app/storage
+      - ../.env:/app/.env
+    depends_on:
+      - db
+    restart: unless-stopped
+    command: >
+      sh -c "python -m scripts.db upgrade &&
+             python -m scripts.init_users &&
+             python -m scripts.init_storage &&
+             streamlit run app/main.py --server.port=8501 --server.address=0.0.0.0"
+
+  db:
+    image: postgres:13
+    environment:
+      - POSTGRES_DB=dash020925
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

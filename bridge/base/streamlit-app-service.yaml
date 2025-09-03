@@ -1,0 +1,21 @@
+# check if there is at least one published port
+
+#! streamlit-app-service.yaml
+# Generated code, do not edit
+apiVersion: v1
+kind: Service
+metadata:
+    name: streamlit-app-published
+    namespace: proyecto-kor-completo
+    labels:
+        com.docker.compose.project: proyecto_kor_completo
+        com.docker.compose.service: streamlit-app
+spec:
+    selector:
+        com.docker.compose.project: proyecto_kor_completo
+        com.docker.compose.service: streamlit-app
+    ports:
+        - name: streamlit--8501
+          port: 8501
+          protocol: TCP
+          targetPort: streamlit--8501

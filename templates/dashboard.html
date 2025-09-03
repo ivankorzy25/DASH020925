@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard KOR - Gestión de HTMLs</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
@@ -126,11 +130,15 @@
             transition: all 0.3s ease;
             display: flex;
             flex-direction: column;
+            cursor: default; /* Anular el cursor de toda la tarjeta */
         }
         
         .producto-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        .producto-imagen-container {
+            cursor: pointer; /* Hacer solo la imagen clickeable */
         }
         
         .producto-imagen-container {
@@ -531,13 +539,120 @@
             font-size: 0.7rem;
             margin-left: 0.5rem;
         }
+
+        .media-manager-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+        .media-item {
+            position: relative;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .media-item .icon {
+            font-size: 3rem;
+            text-align: center;
+            padding: 2rem 0;
+            background-color: #f8f9fa;
+        }
+        .media-item .media-name {
+            font-size: 0.8rem;
+            padding: 0.5rem;
+            background: #eee;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .media-item .delete-media-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            display: none;
+        }
+        .media-item:hover .delete-media-btn {
+            display: block;
+        }
+        .media-item.sortable-ghost {
+            opacity: 0.4;
+            background: #cce5ff;
+        }
+        .media-item.sortable-chosen {
+            cursor: grabbing;
+        }
+
+        /* Estilos para el panel de cotización y modal de dólar */
+        .cotizacion-panel {
+            background: rgba(255, 215, 63, 0.9);
+            border-radius: 10px;
+            padding: 0.5rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            border: 2px solid #FF6B35;
+        }
+        .cotizacion-panel .cotizacion-label { font-weight: 700; color: #000; font-size: 0.8rem; }
+        .cotizacion-panel .cotizacion-valor { font-size: 1.1rem; font-weight: 900; color: #FF6B35; min-width: 100px; }
+        .cotizacion-panel input[type="date"] { background: white; border: 1px solid #FF6B35; border-radius: 5px; padding: 0.2rem 0.4rem; font-weight: 600; color: #000; }
+        .cotizacion-panel .btn-cotizacion { background: #FF6B35; color: white; border: none; padding: 0.2rem 0.8rem; border-radius: 5px; font-weight: 700; }
+        .cotizacion-spinner { border: 2px solid rgba(0,0,0,0.1); border-left-color: #FF6B35; border-radius: 50%; width: 18px; height: 18px; animation: spin 1s linear infinite; }
+        #dolarAvanzadoModal .modal-header { background: black; border-bottom: 4px solid #ef4444; }
+        #dolarAvanzadoModal .kor-gradient { background: linear-gradient(135deg, #ef4444 0%, #eab308 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        #dolarAvanzadoModal .nav-tabs .nav-link.active { color: #ef4444; border-bottom: 3px solid #ef4444; font-weight: bold; }
+        #dolarAvanzadoModal .card-hover:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        
+        /* Estilos para el carrusel mejorado */
+        .carousel-item {
+            position: relative;
+        }
+        .download-link {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 0.5rem;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            transition: all 0.3s;
+            z-index: 10;
+        }
+        .download-link:hover {
+            background: rgba(0, 0, 0, 0.8);
+            transform: scale(1.1);
+        }
+        .carousel-control-prev, .carousel-control-next {
+            background-color: rgba(0, 0, 0, 0.3);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            top: 50%;
+            transform: translateY(-50%);
+        }
     </style>
 </head>
 <body>
     <div class="header">
-        <div class="container">
-            <h1>Dashboard KOR - Gestión de HTMLs</h1>
-            <p>Sistema de carga y visualización de fichas HTML de productos</p>
+        <div class="container d-flex justify-content-between align-items-center">
+            <div>
+                <h1>Dashboard KOR</h1>
+                <p>Sistema de Gestión de Productos y Fichas</p>
+            </div>
+            <div id="cotizacionPanel" class="cotizacion-panel" style="display: none;">
+                <span class="cotizacion-label">USD/ARS:</span>
+                <span class="cotizacion-valor" id="cotizacionActual"><div class="cotizacion-spinner"></div></span>
+                <input type="date" id="fechaCotizacion" class="form-control form-control-sm" style="width: 140px;">
+                <button class="btn btn-cotizacion btn-sm" onclick="actualizarCotizacion()" title="Actualizar cotización"><i class="fas fa-sync-alt"></i></button>
+                <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#dolarAvanzadoModal" title="Dashboard Dólar Avanzado"><i class="fas fa-chart-area"></i></button>
+            </div>
         </div>
     </div>
     
@@ -597,43 +712,80 @@
         </div>
     </div>
     
-    <!-- Modal de gestión de imágenes -->
-    <div class="imagenes-modal" id="imagenesModal">
-        <div class="imagenes-content">
-            <div class="imagenes-header">
-                <h3 id="imagenesTitle">Gestión de Imágenes</h3>
-                <button class="btn btn-danger btn-sm" onclick="closeImagenesModal()">✕ Cerrar</button>
+    <!-- Modal de Ficha de Producto -->
+    <div class="preview-modal" id="fichaProductoModal">
+        <div class="preview-content" style="max-width: 90vw; width: 1200px;">
+            <div class="preview-header">
+                <h3 id="fichaProductoTitle">Ficha de Producto</h3>
+                <button class="btn btn-danger btn-sm" onclick="closeFichaProducto()">Cerrar</button>
             </div>
-            <div class="imagenes-body">
-                <!-- Zona de carga de imágenes -->
-                <div class="imagenes-upload-zone" id="uploadZone" onclick="seleccionarImagenes()">
-                    <div style="font-size: 3rem; margin-bottom: 1rem;">📸</div>
-                    <h4>Arrastra imágenes aquí o haz clic para seleccionar</h4>
-                    <p style="color: #718096; margin-top: 0.5rem;">Puedes subir múltiples imágenes (JPG, PNG, GIF, WebP)</p>
-                    <p style="color: #718096; font-size: 0.85rem;">Se ordenarán automáticamente de mayor a menor tamaño</p>
+            <div class="preview-body" id="fichaProductoBody">
+                <!-- El contenido se generará dinámicamente -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Gestión Multimedia -->
+    <div class="preview-modal" id="mediaManagerModal">
+        <div class="preview-content" style="max-width: 800px; height: 80vh;">
+            <div class="preview-header">
+                <h3 id="mediaManagerTitle">Gestionar Multimedia</h3>
+                <button class="btn btn-danger btn-sm" onclick="closeMediaManager()">Cerrar</button>
+            </div>
+            <div class="preview-body" id="mediaManagerBody" style="padding: 1.5rem;">
+                <div id="upload-zone" style="border: 2px dashed #ccc; padding: 2rem; text-align: center; margin-bottom: 1.5rem; background: #f9f9f9;">
+                    <p>Arrastra y suelta archivos aquí, o haz clic para seleccionar</p>
+                    <input type="file" id="media-upload-input" multiple style="display: none;">
                 </div>
-                
-                <!-- Opciones de carga -->
-                <div class="upload-options">
-                    <div class="radio-option" onclick="setUploadMode('agregar', this)">
-                        <input type="radio" name="uploadMode" value="agregar" id="modoAgregar" checked>
-                        <label for="modoAgregar">➕ Agregar a las existentes</label>
-                    </div>
-                    <div class="radio-option" onclick="setUploadMode('reemplazar', this)">
-                        <input type="radio" name="uploadMode" value="reemplazar" id="modoReemplazar">
-                        <label for="modoReemplazar">🔄 Reemplazar todas</label>
-                    </div>
+                <div id="media-gallery"></div>
+                <div class="text-center mt-3">
+                    <button id="saveOrderBtn" class="btn btn-success" style="display:none;" onclick="saveMediaOrder()">Guardar Orden</button>
                 </div>
-                
-                <!-- Input oculto para selección de archivos -->
-                <input type="file" id="imagenesInput" multiple accept="image/*" style="display: none;" onchange="procesarImagenes(this.files)">
-                
-                <!-- Grid de imágenes existentes -->
-                <div id="imagenesExistentes">
-                    <h4 style="margin-top: 2rem; margin-bottom: 1rem;">Imágenes Actuales</h4>
-                    <div class="imagenes-grid" id="imagenesGrid">
-                        <!-- Se llenará dinámicamente -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PARA DASHBOARD DOLAR AVANZADO -->
+    <div class="modal fade" id="dolarAvanzadoModal" tabindex="-1">
+        <div class="modal-dialog modal-fullscreen">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="d-flex flex-column">
+                        <h1 class="modal-title fs-4 text-white fw-bolder">KOR <span class="kor-gradient">INNOVACION</span></h1>
+                        <span class="text-xs text-warning font-monospace" style="font-size: 0.7rem;">DASHBOARD DÓLAR ARGENTINA</span>
                     </div>
+                    <div id="ultima-actualizacion" class="text-sm text-warning align-self-center"></div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-0 bg-light">
+                    <div class="bg-white border-bottom shadow-sm">
+                        <div class="container-fluid">
+                            <nav class="nav nav-tabs" id="dolarTabs" role="tablist">
+                                <button class="nav-link active" onclick="cambiarTabDolar('cotizaciones')">Cotizaciones</button>
+                                <button class="nav-link" onclick="cambiarTabDolar('historico')">Histórico</button>
+                                <button class="nav-link" onclick="cambiarTabDolar('calculadora')">Calculadora</button>
+                            </nav>
+                        </div>
+                    </div>
+                    <main class="container-fluid py-4">
+                        <div id="panel-cotizaciones">
+                            <div id="cotizaciones-cards" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4"></div>
+                            <div class="row g-4 mt-4">
+                                <div class="col-lg-6"><div class="card shadow-sm p-3"><div style="position: relative; height: 250px;"><canvas id="chart-brechas"></canvas></div></div></div>
+                                <div class="col-lg-6"><div class="card shadow-sm p-3"><div style="position: relative; height: 250px;"><canvas id="chart-valores"></canvas></div></div></div>
+                            </div>
+                            <div class="card shadow-sm mt-4"><div class="table-responsive"><table class="table table-striped table-hover mb-0"><thead><tr><th>Tipo</th><th class="text-end">Compra</th><th class="text-end">Venta</th><th class="text-end">Actualización</th></tr></thead><tbody id="tabla-cotizaciones"></tbody></table></div></div>
+                        </div>
+                        <div id="panel-historico" class="d-none">
+                            <div class="card shadow-sm p-3">
+                                <div class="d-flex gap-2 mb-4"><button onclick="cambiarPeriodo(7)" class="btn btn-light">7d</button><button onclick="cambiarPeriodo(15)" class="btn btn-light">15d</button><button onclick="cambiarPeriodo(30)" class="btn btn-light active">30d</button></div>
+                                <div style="position: relative; height: 400px;"><canvas id="chart-historico"></canvas></div>
+                            </div>
+                        </div>
+                        <div id="panel-calculadora" class="d-none">
+                            <div class="card shadow-sm p-4"><h3 class="h5">Calculadora de Conversión</h3><div class="row g-3"><div class="col-md-6"><label class="form-label">Monto</label><input type="number" id="monto-calcular" class="form-control" placeholder="1000"></div><div class="col-md-6"><label class="form-label">Tipo de Dólar</label><select id="tipo-dolar-calc" class="form-select"></select></div></div><div class="d-grid gap-2 d-md-flex mt-4"><button onclick="calcular('pesosADolar')" class="btn btn-primary">Pesos a Dólares</button><button onclick="calcular('dolarAPesos')" class="btn btn-secondary">Dólares a Pesos</button></div><div id="resultado-calculo" class="mt-4 p-3 bg-light rounded d-none"></div></div>
+                        </div>
+                    </main>
                 </div>
             </div>
         </div>
@@ -641,19 +793,23 @@
     
     <script>
         let productos = [];
+        let cotizacionUSD = 1200; // Valor por defecto
+        let fechaCotizacionActual = new Date().toISOString().split('T')[0];
+        let evolucionDataOficial = [];
         let asociacionesActuales = [];
         let productoActualSKU = null;
         let productoActualModelo = null;
         let modoUpload = 'agregar';
         
-        window.onload = function() {
+        document.addEventListener('DOMContentLoaded', function() {
             loadProductos();
-        };
+        });
         
         function loadProductos() {
             fetch('/api/productos')
                 .then(response => response.json())
                 .then(data => {
+                    console.log("Datos recibidos de la API:", data); // <-- DEBUG
                     productos = data;
                     renderProductos(productos);
                     updateStats();
@@ -906,82 +1062,41 @@
             const container = document.getElementById('productos-list');
             container.innerHTML = '';
             
-            productosToRender.forEach(producto => {
+            productosToRender.forEach((producto, index) => {
                 const card = document.createElement('div');
                 card.className = 'producto-card';
                 card.id = `card-${producto.SKU || producto.Modelo}`;
                 
                 const hasHtml = producto.url_ficha_html ? true : false;
-                
-                // Determinar qué imagen usar (prioridad: Web_Generica > MercadoLibre > Instagram)
-                const imagenUrl = producto.Web_Generica_URL_1 || 
-                                 producto.MercadoLibre_URL_1 || 
-                                 producto.Instagram_Feed_URL_1;
-                
-                // Formatear el precio
-                const precio = producto.Precio_USD_con_IVA ? 
-                    parseFloat(producto.Precio_USD_con_IVA).toFixed(2) : '0.00';
+                const imagenUrl = (producto.imagenes && producto.imagenes.length > 0) ? producto.imagenes[0].url_imagen : 
+                                 producto.Web_Generica_URL_1 || producto.MercadoLibre_URL_1 || producto.Instagram_Feed_URL_1;
+                const precio = producto.Precio_USD_con_IVA ? parseFloat(producto.Precio_USD_con_IVA).toFixed(2) : '0.00';
                 
                 card.innerHTML = `
-                    <div class="producto-imagen-container">
-                        ${imagenUrl ? 
-                            `<img class="producto-imagen" src="${imagenUrl}" alt="${producto.Modelo}" 
-                                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">`
-                            : ''
-                        }
-                        <div class="producto-sin-imagen" ${imagenUrl ? 'style="display:none;"' : ''}>
-                            📦
-                        </div>
+                    <div class="producto-imagen-container" onclick="mostrarFichaProducto(${index}, 'cliente')">
+                        ${imagenUrl ? `<img class="producto-imagen" src="${imagenUrl}" alt="${producto.Modelo}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">` : ''}
+                        <div class="producto-sin-imagen" ${imagenUrl ? 'style="display:none;"' : ''}>📦</div>
                     </div>
-                    
                     <div class="producto-info">
                         <div class="producto-modelo">${producto.Modelo || 'Sin modelo'}</div>
-                        
                         <div class="producto-marca-sku">
                             <span>${producto.Marca || '-'}</span>
                             <span style="text-align: right;">${producto.SKU || '-'}</span>
                         </div>
-                        
                         <div class="producto-precio">$${precio}</div>
-                        
-                        <div class="producto-stock">
-                            Stock: ${producto.Stock || 'No disponible'}
+                        <div class="producto-stock">Stock: ${producto.Stock || 'No disponible'}</div>
+                        <div class="btn-group w-100" role="group">
+                            <button class="btn btn-outline-primary btn-sm" onclick="mostrarFichaProducto(${index}, 'cliente')"><i class="fas fa-eye me-1"></i>Cliente</button>
+                            <button class="btn btn-outline-danger btn-sm" onclick="mostrarFichaProducto(${index}, 'interno')"><i class="fas fa-dollar-sign me-1"></i>Comercial</button>
                         </div>
-                        
-                        <div style="margin-bottom: 0.5rem;">
-                            <span class="status ${hasHtml ? 'con-html' : 'sin-html'}">
-                                ${hasHtml ? '✓ Con HTML' : '✗ Sin HTML'}
-                            </span>
-                        </div>
-                        
-                        <div class="producto-acciones">
-                            ${producto.URL_PDF ? `
-                                <button class="btn btn-info btn-sm" onclick="verPDF('${producto.URL_PDF}', '${producto.Modelo}')">
-                                    📄 Ver PDF
-                                </button>
-                            ` : ''}
-                            <button class="btn btn-imagenes btn-sm" onclick="abrirModalImagenes('${producto.SKU}', '${producto.Modelo}')">
-                                🖼️ Imágenes
-                            </button>
+                        <div class="producto-acciones mt-2">
+                            <button class="btn btn-info btn-sm" onclick="abrirMediaManager('${producto.SKU}', '${producto.Modelo}')">🎬 Gestionar Multimedia</button>
                             ${hasHtml 
-                                ? `
-                                    <button class="btn btn-success btn-sm" onclick="verHTML('${producto.url_ficha_html}', '${producto.Modelo}')">
-                                        👁️ Ver HTML
-                                    </button>
-                                    <button class="btn btn-warning btn-sm" onclick="reemplazarHTML('${producto.Modelo}')">
-                                        🔄 Reemplazar
-                                    </button>
-                                  `
-                                : `
-                                    <button class="btn btn-primary ${producto.URL_PDF ? 'btn-sm' : ''}" onclick="subirHTML('${producto.Modelo}')">
-                                        📤 Subir HTML
-                                    </button>
-                                  `
+                                ? `<button class="btn btn-warning btn-sm" onclick="reemplazarHTML('${producto.Modelo}')">🔄 Reemplazar HTML</button>`
+                                : `<button class="btn btn-primary btn-sm" onclick="subirHTML('${producto.Modelo}')">📤 Subir HTML</button>`
                             }
                         </div>
-                    </div>
-                `;
-                
+                    </div>`;
                 container.appendChild(card);
             });
         }
@@ -1091,25 +1206,315 @@
             });
         }
         
-        // Funciones para el modal de imágenes
-        function abrirModalImagenes(sku, modelo) {
+
+        function mostrarFichaProducto(index, tipoVista = 'cliente') {
+            const producto = productos[index];
+            console.log("Producto seleccionado para la ficha:", producto, "Vista:", tipoVista);
+            if (!producto) return;
+
+            const modal = document.getElementById('fichaProductoModal');
+            const modalTitle = document.getElementById('fichaProductoTitle');
+            const modalBody = document.getElementById('fichaProductoBody');
+
+            modalTitle.textContent = `Ficha de Producto - ${producto.Modelo}`;
+            
+            // --- Lógica de Precios (replicada de LISTA_PRECIOS_KOR_V3_original.html) ---
+            const pvpSinIVA = parseFloat(producto.Precio_USD_sin_IVA) || 0;
+            const ivaPct = parseFloat(producto.IVA_p) || 0;
+            const pvpConIVA = pvpSinIVA * (1 + ivaPct / 100);
+
+            // --- Lógica Comercial (replicada de LISTA_PRECIOS_KOR_V3_original.html) ---
+            let comercialHtml = '';
+            if (tipoVista === 'interno') {
+                const bonifGralPct = parseFloat(producto.Bonificacion_p) || 0;
+                const descContadoPct = parseFloat(producto.Descuento_Contado_p) || 0;
+                const bonifFinancPct = parseFloat(producto.Bonif_Financiacion_p) || 0;
+
+                const costoContadoSinIVA = pvpSinIVA * (1 - bonifGralPct / 100) * (1 - descContadoPct / 100);
+                const costoFinancSinIVA = pvpSinIVA * (1 - bonifFinancPct / 100);
+                const costoContadoConIVA = costoContadoSinIVA * (1 + ivaPct / 100);
+                const costoFinancConIVA = costoFinancSinIVA * (1 + ivaPct / 100);
+
+                const margenContadoConIVA = pvpConIVA - costoContadoConIVA;
+                const porcentajeMargenContado = costoContadoConIVA !== 0 ? (margenContadoConIVA / costoContadoConIVA) * 100 : 0;
+                const margenFinanciadoConIVA = pvpConIVA - costoFinancConIVA;
+                const porcentajeMargenFinanciado = costoFinancConIVA !== 0 ? (margenFinanciadoConIVA / costoFinancConIVA) * 100 : 0;
+
+                comercialHtml = `
+                    <h5 class="mt-4">Información Comercial (Uso Interno)</h5>
+                    <table class="table table-sm table-bordered">
+                        <thead class="table-light"><tr><th colspan="2">PRECIOS DE VENTA AL PÚBLICO (PVP)</th></tr></thead>
+                        <tbody>
+                            <tr><td>PVP (s/IVA) USD</td><td class="text-end fw-bold">$${pvpSinIVA.toLocaleString('es-AR',{minimumFractionDigits:2, maximumFractionDigits:2})}</td></tr>
+                            <tr><td>IVA (${ivaPct}%)</td><td class="text-end">$${(pvpConIVA - pvpSinIVA).toLocaleString('es-AR',{minimumFractionDigits:2, maximumFractionDigits:2})}</td></tr>
+                            <tr class="table-primary"><td class="fw-bold">PVP (c/IVA) USD</td><td class="text-end fw-bold">$${pvpConIVA.toLocaleString('es-AR',{minimumFractionDigits:2, maximumFractionDigits:2})}</td></tr>
+                            <tr><td>PVP (c/IVA) ARS</td><td class="text-end">AR$ ${(pvpConIVA * window.cotizacionUSD).toLocaleString('es-AR',{minimumFractionDigits:2, maximumFractionDigits:2})}</td></tr>
+                        </tbody>
+                        <thead class="table-light"><tr><th colspan="2">SUS CONDICIONES DE COMPRA</th></tr></thead>
+                        <tbody>
+                            ${bonifGralPct > 0 ? `<tr><td>Bonificación General</td><td class="text-end">${bonifGralPct}%</td></tr>` : ''}
+                            ${descContadoPct > 0 ? `<tr><td>Descuento Adicional Contado</td><td class="text-end">${descContadoPct}%</td></tr>` : ''}
+                            <tr><td>Su Costo Contado (c/IVA) USD</td><td class="text-end text-success fw-bold">$${costoContadoConIVA.toLocaleString('es-AR',{minimumFractionDigits:2, maximumFractionDigits:2})}</td></tr>
+                            ${producto.Plan_Financiacion ? `
+                            <tr><td>Plan Financiación</td><td class="text-end">${producto.Plan_Financiacion}</td></tr>
+                            ${bonifFinancPct > 0 ? `<tr><td>Bonificación por Financiación</td><td class="text-end">${bonifFinancPct}%</td></tr>` : ''}
+                            <tr><td>Su Costo Financiado (c/IVA) USD</td><td class="text-end text-info fw-bold">$${costoFinancConIVA.toLocaleString('es-AR',{minimumFractionDigits:2, maximumFractionDigits:2})}</td></tr>
+                            ` : ''}
+                        </tbody>
+                        <thead class="table-light"><tr><th colspan="2">SUS MÁRGENES DE GANANCIA</th></tr></thead>
+                        <tbody>
+                            <tr><td>Contado</td><td class="text-end">${porcentajeMargenContado.toFixed(2)}% (Ganancia: $${margenContadoConIVA.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td></tr>
+                            <tr><td>Financiado</td><td class="text-end">${porcentajeMargenFinanciado.toFixed(2)}% (Ganancia: $${margenFinanciadoConIVA.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td></tr>
+                        </tbody>
+                    </table>`;
+            } else {
+                 comercialHtml = `
+                    <h5 class="mt-4">Información de Venta</h5>
+                    <table class="table table-sm table-hover">
+                        <tbody>
+                            <tr><td>Precio Público (s/IVA)</td><td class="text-end fw-bold">USD ${pvpSinIVA.toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td></tr>
+                            <tr><td>IVA (${ivaPct}%)</td><td class="text-end">USD ${(pvpConIVA - pvpSinIVA).toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td></tr>
+                            <tr class="table-primary"><td class="fw-bold">Precio Público (c/IVA)</td><td class="text-end fw-bold">USD ${pvpConIVA.toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td></tr>
+                            <tr><td>Precio en Pesos (c/IVA)</td><td class="text-end">AR$ ${(pvpConIVA * window.cotizacionUSD).toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td></tr>
+                        </tbody>
+                    </table>
+                    <small class="text-muted">Cotización del dólar de referencia: ${window.cotizacionUSD}</small>`;
+            }
+
+            const imagenes = producto.imagenes || [];
+            const carruselHtml = `
+                <div id="productoCarrusel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="3000">
+                    <div class="carousel-indicators">
+                        ${imagenes.map((img, i) => `<button type="button" data-bs-target="#productoCarrusel" data-bs-slide-to="${i}" class="${i === 0 ? 'active' : ''}"></button>`).join('')}
+                    </div>
+                    <div class="carousel-inner rounded">
+                        ${imagenes.length > 0 ? imagenes.map((img, i) => `
+                            <div class="carousel-item ${i === 0 ? 'active' : ''}">
+                                <a href="${img.url_imagen}" class="download-link" title="Descargar imagen" onclick="event.stopPropagation(); downloadImage(event, '${img.url_imagen}', 'KOR-${producto.Modelo.replace(/[^a-zA-Z0-9]/g, '_')}-${i+1}')">
+                                    <i class="fas fa-download"></i>
+                                </a>
+                                <img src="${img.url_imagen}" class="d-block w-100" style="height: 350px; object-fit: contain;" alt="Imagen de ${producto.Modelo}">
+                            </div>`).join('') : `
+                            <div class="carousel-item active">
+                                <div class="d-flex justify-content-center align-items-center" style="height: 350px; background-color: #f8f9fa;">
+                                    <span class="text-muted">No hay imágenes</span>
+                                </div>
+                            </div>`}
+                    </div>
+                    ${imagenes.length > 1 ? `
+                    <button class="carousel-control-prev" type="button" data-bs-target="#productoCarrusel" data-bs-slide="prev"><span class="carousel-control-prev-icon"></span></button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#productoCarrusel" data-bs-slide="next"><span class="carousel-control-next-icon"></span></button>
+                    ` : ''}
+                </div>`;
+
+            const botonesAccionHtml = `
+                <div class="d-grid gap-2 mt-3">
+                    ${producto.url_ficha_html ? `<a href="${producto.url_ficha_html}" target="_blank" class="btn btn-success"><i class="fas fa-file-alt me-2"></i>Ver Ficha HTML</a>` : ''}
+                    ${producto.URL_PDF ? `<a href="${producto.URL_PDF}" target="_blank" class="btn btn-danger"><i class="fas fa-file-pdf me-2"></i>Ver Ficha PDF</a>` : ''}
+                </div>`;
+
+            modalBody.innerHTML = `
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-lg-5">
+                            ${carruselHtml}
+                            ${botonesAccionHtml}
+                        </div>
+                        <div class="col-lg-7">
+                            <h2 class="mb-3">${producto.Modelo}</h2>
+                            <table class="table table-sm table-striped table-bordered">
+                                <tbody>
+                                    <tr><td class="fw-bold" style="width:35%;">SKU</td><td>${producto.SKU || '-'}</td></tr>
+                                    <tr><td class="fw-bold">Marca</td><td>${producto.Marca || '-'}</td></tr>
+                                    <tr><td class="fw-bold">Familia</td><td><span class="badge bg-primary">${producto.Familia || '-'}</span></td></tr>
+                                    <tr><td class="fw-bold">Potencia</td><td>${producto.Potencia || '-'}</td></tr>
+                                    <tr><td class="fw-bold">Motor</td><td>${producto.Motor || '-'}</td></tr>
+                                    <tr><td class="fw-bold">Combustible</td><td>${producto.Combustible || '-'}</td></tr>
+                                    <tr><td class="fw-bold">Cabina</td><td>${producto.Cabina || '-'}</td></tr>
+                                    <tr><td class="fw-bold">TTA Incluido</td><td>${producto.TTA_Incluido || 'No'}</td></tr>
+                                    <tr><td class="fw-bold">Peso</td><td>${producto.Peso_kg ? producto.Peso_kg + ' kg' : '-'}</td></tr>
+                                    <tr><td class="fw-bold">Dimensiones</td><td>${producto.Dimensiones || '-'}</td></tr>
+                                    <tr><td class="fw-bold">Stock</td><td><span class="badge ${producto.Stock === 'Disponible' ? 'bg-success' : 'bg-danger'}">${producto.Stock || 'Consultar'}</span></td></tr>
+                                </tbody>
+                            </table>
+                            ${comercialHtml}
+                            ${producto.Descripcion ? `<h5 class="mt-4">Descripción</h5><p>${producto.Descripcion}</p>` : ''}
+                            ${producto.Caracteristicas ? `<h5 class="mt-3">Características</h5><p>${producto.Caracteristicas}</p>` : ''}
+                        </div>
+                    </div>
+                </div>`;
+            
+            modal.style.display = 'block';
+        }
+
+        function closeFichaProducto() {
+            document.getElementById('fichaProductoModal').style.display = 'none';
+            document.getElementById('fichaProductoBody').innerHTML = ''; // Limpiar contenido
+        }
+
+        function abrirMediaManager(sku, modelo) {
+            event.stopPropagation();
             productoActualSKU = sku;
             productoActualModelo = modelo;
-            
-            document.getElementById('imagenesTitle').textContent = `Gestión de Imágenes - ${modelo}`;
-            document.getElementById('imagenesModal').style.display = 'block';
-            
-            // Cargar imágenes existentes
-            cargarImagenesExistentes();
+
+            const modal = document.getElementById('mediaManagerModal');
+            document.getElementById('mediaManagerTitle').textContent = `Gestionar Multimedia para: ${modelo}`;
+            modal.style.display = 'block';
+
+            const uploadZone = document.getElementById('upload-zone');
+            const input = document.getElementById('media-upload-input');
+
+            uploadZone.onclick = () => input.click();
+            input.onchange = (e) => handleFiles(e.target.files);
+
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                uploadZone.addEventListener(eventName, preventDefaults, false);
+                document.body.addEventListener(eventName, preventDefaults, false);
+            });
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                uploadZone.addEventListener(eventName, () => uploadZone.style.borderColor = 'green', false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                uploadZone.addEventListener(eventName, () => uploadZone.style.borderColor = '#ccc', false);
+            });
+
+            uploadZone.addEventListener('drop', (e) => handleFiles(e.dataTransfer.files), false);
+
+            cargarMediaExistente(sku);
         }
-        
-        function closeImagenesModal() {
-            document.getElementById('imagenesModal').style.display = 'none';
-            productoActualSKU = null;
-            productoActualModelo = null;
-            modoUpload = 'agregar';
-            document.getElementById('modoAgregar').checked = true;
-            document.querySelectorAll('.radio-option').forEach(opt => opt.classList.remove('selected'));
+
+        function closeMediaManager() {
+            document.getElementById('mediaManagerModal').style.display = 'none';
+        }
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        function handleFiles(files) {
+            const formData = new FormData();
+            for (const file of files) {
+                formData.append('files', file);
+            }
+            formData.append('sku', productoActualSKU);
+            formData.append('modelo', productoActualModelo);
+
+            fetch('/api/upload-media', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification(`${data.urls.length} archivo(s) subido(s) exitosamente.`, 'success');
+                    cargarMediaExistente(productoActualSKU);
+                    // No es necesario recargar todo, solo actualizar el producto localmente
+                    const productoIndex = productos.findIndex(p => p.SKU === productoActualSKU);
+                    if (productoIndex !== -1) {
+                        // Simplemente volvemos a cargar los productos para obtener la lista actualizada
+                        loadProductos();
+                    }
+                } else {
+                    showNotification(`Error: ${data.error}`, 'error');
+                }
+            })
+            .catch(err => showNotification('Error de red al subir archivos.', 'error'));
+        }
+
+        function cargarMediaExistente(sku) {
+            fetch(`/api/media/${sku}`)
+                .then(response => response.json())
+                .then(media => {
+                    const gallery = document.getElementById('media-gallery');
+                    gallery.innerHTML = '';
+                    document.getElementById('saveOrderBtn').style.display = 'none';
+
+                    const mediaGroups = { imagen: [], audio: [], video: [] };
+                    media.forEach(item => {
+                        if (mediaGroups[item.tipo_archivo]) {
+                            mediaGroups[item.tipo_archivo].push(item);
+                        }
+                    });
+
+                    for (const tipo in mediaGroups) {
+                        if (mediaGroups[tipo].length > 0) {
+                            gallery.innerHTML += `<h5>${tipo.charAt(0).toUpperCase() + tipo.slice(1)}s</h5>`;
+                            const grid = document.createElement('div');
+                            grid.className = 'media-manager-grid';
+                            grid.id = `media-grid-${tipo}`;
+                            
+                            mediaGroups[tipo].forEach(item => {
+                                grid.innerHTML += `
+                                <div class="media-item" data-id="${item.id}">
+                                    <button class="btn btn-danger btn-sm delete-media-btn" onclick="eliminarMedia(${item.id}, '${item.url_archivo}')">&times;</button>
+                                    <a href="${item.url_archivo}" target="_blank">
+                                        ${tipo === 'imagen' ? `<img src="${item.url_archivo}" style="width:100%; height: 120px; object-fit: cover;">` : `<div class="icon"><i class="fas fa-file-${tipo}"></i></div>`}
+                                        <div class="media-name">${item.nombre_archivo}</div>
+                                    </a>
+                                </div>`;
+                            });
+                            gallery.appendChild(grid);
+
+                            // Hacer la grilla de imágenes reordenable
+                            if (tipo === 'imagen') {
+                                new Sortable(grid, {
+                                    animation: 150,
+                                    ghostClass: 'sortable-ghost',
+                                    onUpdate: function () {
+                                        document.getElementById('saveOrderBtn').style.display = 'inline-block';
+                                    }
+                                });
+                            }
+                        }
+                    }
+                });
+        }
+
+        function eliminarMedia(id, url) {
+            if (!confirm('¿Estás seguro de que quieres eliminar este archivo?')) return;
+            fetch('/api/delete-media', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: id, url: url })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification('Archivo eliminado.', 'success');
+                    cargarMediaExistente(productoActualSKU);
+                    loadProductos(); // Recargar productos para actualizar la vista principal
+                } else {
+                    showNotification(`Error: ${data.error}`, 'error');
+                }
+            })
+            .catch(err => showNotification('Error de red al eliminar el archivo.', 'error'));
+        }
+
+        function saveMediaOrder() {
+            const grid = document.getElementById('media-grid-imagen');
+            if (!grid) return;
+
+            const orderedIds = Array.from(grid.children).map(item => item.dataset.id);
+            
+            fetch('/api/update-media-order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sku: productoActualSKU, ordered_ids: orderedIds })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification('Orden de imágenes guardado.', 'success');
+                    document.getElementById('saveOrderBtn').style.display = 'none';
+                    loadProductos(); // Recargar para que la portada se actualice
+                } else {
+                    showNotification(`Error al guardar el orden: ${data.error}`, 'error');
+                }
+            })
+            .catch(err => showNotification('Error de red al guardar el orden.', 'error'));
         }
         
         function seleccionarImagenes() {
@@ -1235,30 +1640,192 @@
                 showNotification('Error al eliminar imagen', 'error');
             });
         }
-        
-        // Configurar drag and drop
-        const uploadZone = document.getElementById('uploadZone');
-        
-        uploadZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadZone.classList.add('dragover');
-        });
-        
-        uploadZone.addEventListener('dragleave', () => {
-            uploadZone.classList.remove('dragover');
-        });
-        
-        uploadZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadZone.classList.remove('dragover');
-            
-            const files = Array.from(e.dataTransfer.files).filter(file => file.type.startsWith('image/'));
-            if (files.length > 0) {
-                procesarImagenes(files);
+
+        function downloadImage(event, url, filename) {
+            event.preventDefault();
+            event.stopPropagation();
+            fetch(url, { mode: 'cors' })
+            .then(response => response.blob())
+            .then(blob => {
+                const blobUrl = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = blobUrl;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(blobUrl);
+                a.remove();
+            })
+            .catch((e) => {
+                console.error('Error al descargar imagen:', e);
+                showNotification('No se pudo descargar la imagen. Intente abrirla en una nueva pestaña y guardarla.', 'error');
+                window.open(url, '_blank');
+            });
+        }
+
+        // --- LÓGICA DEL DÓLAR ---
+        async function cargarDatosEvolucion() {
+            try {
+                const response = await fetch('https://api.bluelytics.com.ar/v2/evolution.json');
+                if (!response.ok) throw new Error('No se pudo conectar a la API de Bluelytics.');
+                const data = await response.json();
+                evolucionDataOficial = data.filter(d => d.source === 'Oficial').sort((a, b) => new Date(a.date) - new Date(b.date));
+                if (evolucionDataOficial.length === 0) throw new Error('La API no devolvió datos para el Dólar Oficial.');
+                
+                const fechaInput = document.getElementById('fechaCotizacion');
+                const hoy = new Date();
+                fechaInput.max = hoy.toISOString().split('T')[0];
+                if (evolucionDataOficial.length > 0) fechaInput.min = evolucionDataOficial[0].date;
+                fechaInput.value = hoy.toISOString().split('T')[0];
+                
+                buscarCotizacionHistorica(fechaInput.value);
+            } catch (error) {
+                console.error('Error al cargar datos de cotización:', error);
+                actualizarDisplayCotizacion(cotizacionUSD);
+            }
+        }
+
+        function actualizarCotizacion() {
+            const fecha = document.getElementById('fechaCotizacion').value;
+            if (fecha) {
+                document.getElementById('cotizacionActual').innerHTML = '<div class="cotizacion-spinner"></div>';
+                buscarCotizacionHistorica(fecha);
+            }
+        }
+
+        function buscarCotizacionHistorica(fechaStr) {
+            let resultado = evolucionDataOficial.find(d => d.date === fechaStr);
+            if (resultado) {
+                cotizacionUSD = resultado.value_sell;
+                fechaCotizacionActual = resultado.date;
+                actualizarDisplayCotizacion(cotizacionUSD);
+                // Aquí podrías agregar una función para refrescar la tabla si es necesario
             } else {
-                showNotification('Solo se aceptan archivos de imagen', 'error');
+                showNotification(`No se encontraron datos para la fecha seleccionada.`, 'warning');
+            }
+        }
+
+        function actualizarDisplayCotizacion(valor) {
+            document.getElementById('cotizacionActual').innerHTML = `$${valor.toLocaleString('es-AR')}`;
+            document.getElementById('cotizacionPanel').style.display = 'flex';
+        }
+
+        function cambiarTabDolar(tab) {
+            // Lógica para cambiar tabs en el modal del dólar
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProductos();
+            cargarDatosEvolucion();
+            const dolarModal = document.getElementById('dolarAvanzadoModal');
+            if (dolarModal) {
+                dolarModal.addEventListener('show.bs.modal', event => {
+                    if (!window.dolarAvanzadoInicializado) {
+                        obtenerCotizaciones();
+                        window.dolarAvanzadoInicializado = true;
+                    }
+                });
             }
         });
+
+        // SCRIPT COMPLETO DEL DASHBOARD DE DOLAR
+        let cotizacionesActuales = [];
+        let chartBrechas = null, chartValores = null, chartHistorico = null;
+        let datosHistoricosCompletos = [];
+
+        const coloresMap = {oficial:'#000',blue:'#3b82f6',bolsa:'#ef4444',contadoconliqui:'#eab308',mayorista:'#6b7280',tarjeta:'#ec4899',cripto:'#8b5cf6'};
+        const nombresMap = {oficial:'Oficial',blue:'Blue',bolsa:'MEP',contadoconliqui:'CCL',mayorista:'Mayorista',tarjeta:'Tarjeta',cripto:'Cripto'};
+
+        function formatCurrencyDolar(value) { return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(value); }
+        function formatDateDolar(date) { return new Date(date).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });}
+
+        async function fetchWithTimeout(url, options = {}) {
+            const { timeout = 8000 } = options;
+            const controller = new AbortController();
+            const id = setTimeout(() => controller.abort(), timeout);
+            const response = await fetch(url, { ...options, signal: controller.signal });
+            clearTimeout(id);
+            return response;
+        }
+
+        function cambiarTabDolar(tab) {
+            ['cotizaciones', 'historico', 'calculadora'].forEach(p => document.getElementById(`panel-${p}`).classList.add('d-none'));
+            document.getElementById(`panel-${tab}`).classList.remove('d-none');
+            if (tab === 'historico' && datosHistoricosCompletos.length === 0) cargarHistorico();
+        }
+
+        async function obtenerCotizaciones() {
+            try {
+                const response = await fetchWithTimeout('https://dolarapi.com/v1/dolares');
+                if (!response.ok) throw new Error('Error al obtener cotizaciones');
+                cotizacionesActuales = await response.json();
+                actualizarDashboardDolar();
+                document.getElementById('ultima-actualizacion').textContent = `Actualizado: ${new Date().toLocaleTimeString()}`;
+            } catch (error) {
+                console.error('Error en cotizaciones:', error);
+            }
+        }
+
+        function actualizarDashboardDolar() {
+            const oficial = cotizacionesActuales.find(d => d.casa === 'oficial');
+            if (!oficial) return;
+            
+            // Cards
+            document.getElementById('cotizaciones-cards').innerHTML = cotizacionesActuales.map(d => {
+                const brecha = d.casa === 'oficial' ? 0 : ((d.venta - oficial.venta) / oficial.venta * 100);
+                return `<div class="col"><div class="card h-100 shadow-sm card-hover"><div class="card-body">
+                        <div class="d-flex justify-content-between"><h3 class="h6 card-title">${nombresMap[d.casa] || d.nombre}</h3>
+                        ${brecha !== 0 ? `<span class="badge bg-${brecha > 0 ? 'danger' : 'success'}">${brecha.toFixed(1)}%</span>` : ''}</div>
+                        <p class="card-text">Compra: <strong>${formatCurrencyDolar(d.compra)}</strong></p>
+                        <p class="card-text">Venta: <strong>${formatCurrencyDolar(d.venta)}</strong></p>
+                        </div></div></div>`;
+            }).join('');
+
+            // Tabla
+            document.getElementById('tabla-cotizaciones').innerHTML = cotizacionesActuales.map(d => `<tr><td>${nombresMap[d.casa] || d.nombre}</td><td class="text-end">${formatCurrencyDolar(d.compra)}</td><td class="text-end">${formatCurrencyDolar(d.venta)}</td><td class="text-end small">${formatDateDolar(d.fechaActualizacion)}</td></tr>`).join('');
+
+            // Gráficos
+            const datosOrdenados = cotizacionesActuales.filter(d => d.casa !== 'oficial').map(d => ({ ...d, brecha: ((d.venta - oficial.venta) / oficial.venta * 100) })).sort((a, b) => b.brecha - a.brecha);
+            if (chartBrechas) chartBrechas.destroy();
+            chartBrechas = new Chart(document.getElementById('chart-brechas').getContext('2d'), { type: 'bar', data: { labels: datosOrdenados.map(d => nombresMap[d.casa]), datasets: [{ label: 'Brecha %', data: datosOrdenados.map(d => d.brecha), backgroundColor: datosOrdenados.map(d => coloresMap[d.casa]) }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
+            if (chartValores) chartValores.destroy();
+            chartValores = new Chart(document.getElementById('chart-valores').getContext('2d'), { type: 'line', data: { labels: cotizacionesActuales.map(d => nombresMap[d.casa]), datasets: [{ label: 'Compra', data: cotizacionesActuales.map(d => d.compra), borderColor: '#10b981' }, { label: 'Venta', data: cotizacionesActuales.map(d => d.venta), borderColor: '#ef4444' }] }, options: { responsive: true, maintainAspectRatio: false } });
+            
+            // Calculadora
+            document.getElementById('tipo-dolar-calc').innerHTML = cotizacionesActuales.map(d => `<option value="${d.casa}">${nombresMap[d.casa] || d.nombre}</option>`).join('');
+        }
+
+        async function cargarHistorico() {
+            try {
+                const response = await fetchWithTimeout('https://api.bluelytics.com.ar/v2/evolution.json');
+                if (!response.ok) throw new Error('Error al obtener histórico');
+                datosHistoricosCompletos = await response.json();
+                cambiarPeriodo(30);
+            } catch (error) { console.error('Error en histórico:', error); }
+        }
+
+        function cambiarPeriodo(dias) {
+            const fechaInicio = new Date();
+            fechaInicio.setDate(fechaInicio.getDate() - dias);
+            const datosOficial = datosHistoricosCompletos.filter(d => d.source === 'Oficial' && new Date(d.date) >= fechaInicio).sort((a, b) => new Date(a.date) - new Date(b.date));
+            const datosBlue = datosHistoricosCompletos.filter(d => d.source === 'Blue' && new Date(d.date) >= fechaInicio).sort((a, b) => new Date(a.date) - new Date(b.date));
+            const fechas = datosOficial.map(d => new Date(d.date).toLocaleDateString('es-AR', {day:'numeric', month:'short'}));
+            if (chartHistorico) chartHistorico.destroy();
+            chartHistorico = new Chart(document.getElementById('chart-historico').getContext('2d'), { type: 'line', data: { labels: fechas, datasets: [{ label: 'Oficial Venta', data: datosOficial.map(d => d.value_sell), borderColor: '#ef4444' }, { label: 'Blue Venta', data: datosBlue.map(d => d.value_sell), borderColor: '#3b82f6' }] }, options: { responsive: true, maintainAspectRatio: false } });
+        }
+
+        function calcular(tipo) {
+            const monto = parseFloat(document.getElementById('monto-calcular').value) || 0;
+            const dolar = cotizacionesActuales.find(d => d.casa === document.getElementById('tipo-dolar-calc').value);
+            if (!dolar) return;
+            const resultado = tipo === 'pesosADolar' ? (monto / dolar.venta) : (monto * dolar.compra);
+            const texto = tipo === 'pesosADolar' ? `${formatCurrencyDolar(monto)} = USD ${resultado.toFixed(2)}` : `USD ${monto.toFixed(2)} = ${formatCurrencyDolar(resultado)}`;
+            document.getElementById('resultado-calculo').innerHTML = `<p class="fs-5 fw-bold mb-0">${texto}</p><small>TC: ${nombresMap[dolar.casa]} Venta: ${formatCurrencyDolar(dolar.venta)}</small>`;
+            document.getElementById('resultado-calculo').classList.remove('d-none');
+        }
+        
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
